@@ -27,7 +27,7 @@ jobs:
           clientId: ${{ secrets.PORT_CLIENT_ID }}
           clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
           blueprint: githubPullRequests
-          identifier: "${{ github.event.pull_request.number }}"
+          identifier: githubPullRequests
           checks: |
             {
               "has_readme": "${{ steps.check_readme.outputs.result }}"
