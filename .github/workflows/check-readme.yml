@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - '**'  # Optional: detect README changes on any branch
+      - '**'
 
 jobs:
   check-readme:
@@ -32,5 +32,5 @@ jobs:
           identifier: ${{ github.repository }}
           properties: |
             {
-              "has_readme": ${{ steps.readme_check.outputs.result }}
+              "has_readme": "${{ steps.readme_check.outputs.result }}"
             }
