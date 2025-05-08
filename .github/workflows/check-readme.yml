@@ -30,7 +30,7 @@ jobs:
           clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
           blueprint: githubRepository
           identifier: ${{ github.repository }}
-          properties: |
+          checks: |
             {
               "has_readme": "${{ steps.readme_check.outputs.result }}"
             }
