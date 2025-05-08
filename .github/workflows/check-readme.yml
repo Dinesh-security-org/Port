@@ -18,9 +18,9 @@ jobs:
         id: readme_check
         run: |
           if [ -f README.md ]; then
-            echo "result=true" >> $GITHUB_OUTPUT
+            echo "result=Pass" >> $GITHUB_OUTPUT
           else
-            echo "result=false" >> $GITHUB_OUTPUT
+            echo "result=Fail" >> $GITHUB_OUTPUT
           fi
 
       - name: Push result to Port
