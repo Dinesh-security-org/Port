@@ -7,7 +7,7 @@ pytest==7.4.0
 
 # For linting and formatting
 flake8==6.1.0
-black==23.7.0
+black==23.7.1
 
 # For environment variable management
 python-dotenv==1.0.0
