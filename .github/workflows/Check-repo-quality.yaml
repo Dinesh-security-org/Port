@@ -98,11 +98,15 @@ jobs:
         run: |
           pip-audit > pip_audit_output.txt
           if grep -q "No known vulnerabilities" pip_audit_output.txt; then
-            echo "issues_found=true"
-            if issues_found; then
-              echo "result=Pass" >> $GITHUB_OUTPUT
-            else
-              echo "result=Fail" >> $GITHUB_OUTPUT
+            issues_found=false
+          else
+            issues_found=true
+          fi
+          
+          if [ "$issues_found" = "false" ]; then
+            echo "result=Pass" >> $GITHUB_OUTPUT
+          else
+            echo "result=Fail" >> $GITHUB_OUTPUT
           fi
 
       # 🕒 Check days since last commit
