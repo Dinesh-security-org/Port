@@ -59,7 +59,89 @@ jobs:
           else
             echo "result=Fail" >> $GITHUB_OUTPUT
           fi
+       # 🧪 Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
 
+      # 📦 Install required tools
+      - name: Install Dependencies
+        run: |
+          pip install coverage pip-audit flake8
+          sudo apt-get install -y jq
+          npm install -g semver
+
+      # ✅ Run tests with coverage
+      - name: Run Tests and Extract Coverage %
+        id: test_coverage
+        run: |
+          coverage run -m unittest discover || true
+          coverage report || true
+          COVERAGE=$(coverage report | grep TOTAL | awk '{print $NF}' | sed 's/%//')
+          echo "test_coverage=$COVERAGE" >> $GITHUB_OUTPUT
+          if $COVERAGE > 85 ; then
+            echo "result=Pass" >> $GITHUB_OUTPUT
+          else
+            echo "result=Fail" >> $GITHUB_OUTPUT
+          fi
+
+      # 🔍 Lint check using flake8
+      - name: Lint Code with flake8
+        id: lint_check
+        run: |
+          if flake8 .; then
+            echo "result=Pass" >> $GITHUB_OUTPUT
+          else
+            echo "result=Fail" >> $GITHUB_OUTPUT
+          fi
+
+      # 🔐 Security audit using pip-audit
+      - name: Run pip-audit
+        id: security_check
+        continue-on-error: true
+        run: |
+          pip-audit > pip_audit_output.txt
+          if grep -q "No known vulnerabilities" pip_audit_output.txt; then
+            echo "result=Pass" >> $GITHUB_OUTPUT
+          else
+            echo "result=Fail" >> $GITHUB_OUTPUT
+          fi
+
+      # 🕒 Check days since last commit
+      - name: Days Since Last Commit
+        id: last_commit
+        run: |
+          LAST_COMMIT_DATE=$(git log -1 --format=%ct)
+          NOW=$(date +%s)
+          DIFF=$(( (NOW - LAST_COMMIT_DATE) / 86400 ))
+          echo "days=$DIFF" >> $GITHUB_OUTPUT
+          if $DIFF < 2 ; then
+            echo "result=Pass" >> $GITHUB_OUTPUT
+          else
+            echo "result=Fail" >> $GITHUB_OUTPUT
+          fi
+
+      # 🔢 Check if Semver tags exist
+      - name: Check for Semantic Versioning Tags
+        id: semver_check
+        run: |
+          if git tag | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "result=Pass" >> $GITHUB_OUTPUT
+          else
+            echo "result=Fail" >> $GITHUB_OUTPUT
+          fi
+
+      # 🪝 Check for pre-commit config
+      - name: Check for Pre-commit Configuration
+        id: precommit_check
+        run: |
+          if [ -f .pre-commit-config.yaml ]; then
+            echo "result=Pass" >> $GITHUB_OUTPUT
+          else
+            echo "result=Fail" >> $GITHUB_OUTPUT
+          fi
+          
       # Push results to Port
       - name: Push Result to Port
         uses: port-labs/port-github-action@v1
@@ -71,5 +153,11 @@ jobs:
           properties: |
             {
               "has_license": "${{ steps.license_check.outputs.result }}",
-              "has_gitignore": "${{ steps.gitignore_check.outputs.result }}"
+              "has_gitignore": "${{ steps.gitignore_check.outputs.result }}",
+              "test_coverage": "${{ steps.test_coverage.outputs.test_coverage }}",
+              "lint_passed": "${{ steps.lint_check.outputs.result }}",
+              "security_issues_found": "${{ steps.security_check.outputs.result }}",
+              "days_since_last_commit": "${{ steps.last_commit.outputs.days }}",
+              "uses_semver": "${{ steps.semver_check.outputs.result }}",
+              "has_precommit": "${{ steps.precommit_check.outputs.result }}"
             }
