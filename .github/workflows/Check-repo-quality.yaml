@@ -1,0 +1,75 @@
+name: Repository Quality Checks
+
+on:
+  push:
+    branches:
+      - main
+      - '**'
+  pull_request:
+
+jobs:
+  quality-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Check for LICENSE
+      - name: Check for LICENSE
+        id: license_check
+        run: |
+          if [ -f LICENSE ]; then
+            echo "result=Pass" >> $GITHUB_OUTPUT
+          else
+            echo "result=Fail" >> $GITHUB_OUTPUT
+          fi
+
+      # Check for .gitignore
+      - name: Check for .gitignore
+        id: gitignore_check
+        run: |
+          if [ -f .gitignore ]; then
+            echo "result=Pass" >> $GITHUB_OUTPUT
+          else
+            echo "result=Fail" >> $GITHUB_OUTPUT
+          fi
+
+      # Validate YAML files
+      - name: Lint YAML Files
+        uses: ibiqlik/action-yamllint@v3
+
+      # Validate JSON files
+      - name: Validate JSON Files
+        run: |
+          for file in $(find . -name "*.json"); do
+            echo "Validating $file"
+            jq empty "$file" || exit 1
+          done
+
+      # Run spell check
+      - name: Check Spelling
+        uses: codespell-project/actions-codespell@master
+
+      # Check for GitHub Actions workflows
+      - name: Check for GitHub Actions Workflows
+        run: |
+          if ls .github/workflows/*.yml 1> /dev/null 2>&1; then
+            echo "result=Pass" >> $GITHUB_OUTPUT
+          else
+            echo "result=Fail" >> $GITHUB_OUTPUT
+          fi
+
+      # Push results to Port
+      - name: Push Result to Port
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          blueprint: githubRepository
+          identifier: ${{ github.repository }}
+          properties: |
+            {
+              "has_license": "${{ steps.license_check.outputs.result }}",
+              "has_gitignore": "${{ steps.gitignore_check.outputs.result }}"
+            }
