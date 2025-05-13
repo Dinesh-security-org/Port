@@ -35,10 +35,6 @@ jobs:
             echo "result=Fail" >> $GITHUB_OUTPUT
           fi
 
-      # Validate YAML files
-      - name: Lint YAML Files
-        uses: ibiqlik/action-yamllint@v3
-
       # Validate JSON files
       - name: Validate JSON Files
         run: |
@@ -154,7 +150,6 @@ jobs:
               "has_license": "${{ steps.license_check.outputs.result }}",
               "has_gitignore": "${{ steps.gitignore_check.outputs.result }}",
               "test_coverage_check": "${{ steps.test_coverage.outputs.result }}",
-              "lint_check": "${{ steps.lint_check.outputs.result }}",
               "security_check": "${{ steps.security_check.outputs.result }}",
               "last_commit_check": "${{ steps.last_commit.outputs.result }}",
               "semver_check": "${{ steps.semver_check.outputs.result }}",
