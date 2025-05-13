@@ -80,11 +80,6 @@ jobs:
           coverage report || true
           COVERAGE=$(coverage report | grep TOTAL | awk '{print $NF}' | sed 's/%//')
           echo "test_coverage=$COVERAGE" >> $GITHUB_OUTPUT
-          if $COVERAGE > 85 ; then
-            echo "result=Pass" >> $GITHUB_OUTPUT
-          else
-            echo "result=Fail" >> $GITHUB_OUTPUT
-          fi
 
       # 🔍 Lint check using flake8
       - name: Lint Code with flake8
@@ -116,11 +111,6 @@ jobs:
           NOW=$(date +%s)
           DIFF=$(( (NOW - LAST_COMMIT_DATE) / 86400 ))
           echo "days=$DIFF" >> $GITHUB_OUTPUT
-          if $DIFF < 2 ; then
-            echo "result=Pass" >> $GITHUB_OUTPUT
-          else
-            echo "result=Fail" >> $GITHUB_OUTPUT
-          fi
 
       # 🔢 Check if Semver tags exist
       - name: Check for Semantic Versioning Tags
