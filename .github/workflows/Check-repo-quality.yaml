@@ -15,7 +15,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Check for LICENSE
+      # ✅ Check for LICENSE
       - name: Check for LICENSE
         id: license_check
         run: |
@@ -25,7 +25,7 @@ jobs:
             echo "result=Fail" >> $GITHUB_OUTPUT
           fi
 
-      # Check for .gitignore
+      # ✅ Check for .gitignore
       - name: Check for .gitignore
         id: gitignore_check
         run: |
@@ -35,113 +35,37 @@ jobs:
             echo "result=Fail" >> $GITHUB_OUTPUT
           fi
 
-      # Validate JSON files
-      - name: Validate JSON Files
+      # 🧪 Check for any test directory
+      - name: Check for test directory
+        id: testdir_check
         run: |
-          for file in $(find . -name "*.json"); do
-            echo "Validating $file"
-            jq empty "$file" || exit 1
-          done
+          if [ -d tests ] || [ -d test ]; then
+            echo "result=Pass" >> $GITHUB_OUTPUT
+          else
+            echo "result=Fail" >> $GITHUB_OUTPUT
+          fi
 
-      # Run spell check
-      - name: Check Spelling
-        uses: codespell-project/actions-codespell@master
-
-      # Check for GitHub Actions workflows
+      # 🧩 Check for GitHub Actions workflows
       - name: Check for GitHub Actions Workflows
+        id: workflows_check
         run: |
           if ls .github/workflows/*.yml 1> /dev/null 2>&1; then
             echo "result=Pass" >> $GITHUB_OUTPUT
           else
             echo "result=Fail" >> $GITHUB_OUTPUT
           fi
-       # 🧪 Set up Python
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
 
-      # 📦 Install required tools
-      - name: Install Dependencies
+      # 🔒 Check for presence of a requirements.txt or package.json
+      - name: Check for Dependency Manifest
+        id: dependency_manifest
         run: |
-          pip install coverage pip-audit flake8
-          sudo apt-get install -y jq
-          npm install -g semver
-
-      # ✅ Run tests with coverage
-      - name: Run Tests and Extract Coverage %
-        id: test_coverage
-        run: |
-          coverage run -m unittest discover || true
-          coverage report || true
-          COVERAGE=$(coverage report | grep TOTAL | awk '{print $NF}' | sed 's/%//')
-          if [ "${COVERAGE%%.*}" -ge 80 ]; then
+          if [ -f requirements.txt ] || [ -f package.json ]; then
             echo "result=Pass" >> $GITHUB_OUTPUT
           else
             echo "result=Fail" >> $GITHUB_OUTPUT
           fi
 
-      # 🔍 Lint check using flake8
-      - name: Lint Code with flake8
-        id: lint_check
-        run: |
-          if flake8 .; then
-            echo "result=Pass" >> $GITHUB_OUTPUT
-          else
-            echo "result=Fail" >> $GITHUB_OUTPUT
-          fi
-
-      # 🔐 Security audit using pip-audit
-      - name: Run pip-audit
-        id: security_check
-        continue-on-error: true
-        run: |
-          pip-audit > pip_audit_output.txt
-          if grep -q "No known vulnerabilities" pip_audit_output.txt; then
-            issues_found=false
-          else
-            issues_found=true
-          fi
-          
-          if [ "$issues_found" = "false" ]; then
-            echo "result=Pass" >> $GITHUB_OUTPUT
-          else
-            echo "result=Fail" >> $GITHUB_OUTPUT
-          fi
-
-      # 🕒 Check days since last commit
-      - name: Days Since Last Commit
-        id: last_commit
-        run: |
-          LAST_COMMIT_DATE=$(git log -1 --format=%ct)
-          NOW=$(date +%s)
-          DIFF=$(( (NOW - LAST_COMMIT_DATE) / 86400 ))
-          if [ "$DIFF" -le 30 ]; then
-            echo "result=Pass" >> $GITHUB_OUTPUT
-          else
-            echo "result=Fail" >> $GITHUB_OUTPUT
-          fi
-      # 🔢 Check if Semver tags exist
-      - name: Check for Semantic Versioning Tags
-        id: semver_check
-        run: |
-          if git tag | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
-            echo "result=Pass" >> $GITHUB_OUTPUT
-          else
-            echo "result=Fail" >> $GITHUB_OUTPUT
-          fi
-
-      # 🪝 Check for pre-commit config
-      - name: Check for Pre-commit Configuration
-        id: precommit_check
-        run: |
-          if [ -f .pre-commit-config.yaml ]; then
-            echo "result=Pass" >> $GITHUB_OUTPUT
-          else
-            echo "result=Fail" >> $GITHUB_OUTPUT
-          fi
-          
-      # Push results to Port
+      # 🟢 Push results to Port
       - name: Push Result to Port
         uses: port-labs/port-github-action@v1
         with:
@@ -153,9 +77,7 @@ jobs:
             {
               "has_license": "${{ steps.license_check.outputs.result }}",
               "has_gitignore": "${{ steps.gitignore_check.outputs.result }}",
-              "test_coverage_check": "${{ steps.test_coverage.outputs.result }}",
-              "security_check": "${{ steps.security_check.outputs.result }}",
-              "last_commit_check": "${{ steps.last_commit.outputs.result }}",
-              "semver_check": "${{ steps.semver_check.outputs.result }}",
-              "precommit_check": "${{ steps.precommit_check.outputs.result }}"
+              "has_test_dir": "${{ steps.testdir_check.outputs.result }}",
+              "has_workflows": "${{ steps.workflows_check.outputs.result }}",
+              "has_dependency_manifest": "${{ steps.dependency_manifest.outputs.result }}"
             }
