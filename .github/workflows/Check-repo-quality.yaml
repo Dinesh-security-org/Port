@@ -79,7 +79,11 @@ jobs:
           coverage run -m unittest discover || true
           coverage report || true
           COVERAGE=$(coverage report | grep TOTAL | awk '{print $NF}' | sed 's/%//')
-          echo "test_coverage=$COVERAGE" >> $GITHUB_OUTPUT
+          if [ "${COVERAGE%%.*}" -ge 80 ]; then
+            echo "result=Pass" >> $GITHUB_OUTPUT
+          else
+            echo "result=Fail" >> $GITHUB_OUTPUT
+          fi
 
       # 🔍 Lint check using flake8
       - name: Lint Code with flake8
@@ -98,6 +102,8 @@ jobs:
         run: |
           pip-audit > pip_audit_output.txt
           if grep -q "No known vulnerabilities" pip_audit_output.txt; then
+            echo "issues_found=true"
+            if 
             echo "result=Pass" >> $GITHUB_OUTPUT
           else
             echo "result=Fail" >> $GITHUB_OUTPUT
@@ -110,8 +116,11 @@ jobs:
           LAST_COMMIT_DATE=$(git log -1 --format=%ct)
           NOW=$(date +%s)
           DIFF=$(( (NOW - LAST_COMMIT_DATE) / 86400 ))
-          echo "days=$DIFF" >> $GITHUB_OUTPUT
-
+          if [ "$DIFF" -le 30 ]; then
+            echo "result=Pass" >> $GITHUB_OUTPUT
+          else
+            echo "result=Fail" >> $GITHUB_OUTPUT
+          fi
       # 🔢 Check if Semver tags exist
       - name: Check for Semantic Versioning Tags
         id: semver_check
@@ -144,10 +153,10 @@ jobs:
             {
               "has_license": "${{ steps.license_check.outputs.result }}",
               "has_gitignore": "${{ steps.gitignore_check.outputs.result }}",
-              "test_coverage": "${{ steps.test_coverage.outputs.test_coverage }}",
-              "lint_passed": "${{ steps.lint_check.outputs.result }}",
-              "security_issues_found": "${{ steps.security_check.outputs.result }}",
-              "days_since_last_commit": "${{ steps.last_commit.outputs.days }}",
-              "uses_semver": "${{ steps.semver_check.outputs.result }}",
-              "has_precommit": "${{ steps.precommit_check.outputs.result }}"
+              "test_coverage_check": "${{ steps.test_coverage.outputs.result }}",
+              "lint_check": "${{ steps.lint_check.outputs.result }}",
+              "security_check": "${{ steps.security_check.outputs.result }}",
+              "last_commit_check": "${{ steps.last_commit.outputs.result }}",
+              "semver_check": "${{ steps.semver_check.outputs.result }}",
+              "precommit_check": "${{ steps.precommit_check.outputs.result }}"
             }
