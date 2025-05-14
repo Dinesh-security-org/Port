@@ -14,6 +14,16 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        
+      # Check for readme
+      - name: Check for README
+        id: readme_check
+        run: |
+          if [ -f README.md ]; then
+            echo "result=Pass" >> $GITHUB_OUTPUT
+          else
+            echo "result=Fail" >> $GITHUB_OUTPUT
+          fi
 
       # ✅ Check for LICENSE
       - name: Check for LICENSE
@@ -75,6 +85,7 @@ jobs:
           identifier: ${{ github.repository }}
           properties: |
             {
+              "has_readme": "${{ steps.readme_check.outputs.result }}",
               "has_license": "${{ steps.license_check.outputs.result }}",
               "has_gitignore": "${{ steps.gitignore_check.outputs.result }}",
               "has_test_dir": "${{ steps.testdir_check.outputs.result }}",
