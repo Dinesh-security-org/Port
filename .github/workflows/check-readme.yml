@@ -5,7 +5,8 @@ on:
     branches:
       - main
       - '**'
-
+  workflow_call:
+  
 jobs:
   check-readme:
     runs-on: ubuntu-latest
