@@ -7,9 +7,9 @@ on:
       - '**'
   workflow_call:
     secrets:
-      clientId:
+      PORT_CLIENT_ID:
         required: true
-      clientSecret:
+      PORT_CLIENT_SECRET:
         required: true
   
 jobs:
