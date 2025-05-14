@@ -6,6 +6,11 @@ on:
       - main
       - '**'
   workflow_call:
+    secrets:
+      clientId:
+        required: true
+      clientSecret:
+        required: true
   
 jobs:
   check-readme:
