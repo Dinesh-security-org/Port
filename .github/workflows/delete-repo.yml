@@ -1,0 +1,23 @@
+name: Delete GitHub Repo
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo_name:
+        description: 'Repository name to delete'
+        required: true
+
+jobs:
+  delete-repo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Delete repository from org
+        env:
+          GH_TOKEN: ${{ secrets.GH_ADMIN_TOKEN }}
+        run: |
+          echo "Deleting repository: ${{ github.event.inputs.repo_name }}"
+
+          curl -X DELETE https://api.github.com/repos/DB-Advisory/${{ github.event.inputs.repo_name }} \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json"
