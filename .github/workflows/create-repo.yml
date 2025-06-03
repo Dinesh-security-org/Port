@@ -24,6 +24,6 @@ jobs:
             -d '{
               "name": "'"${{ github.event.inputs.repo_name }}"'",
               "description": "Repository created via Port self-service",
-              "private": true,
+              "private": "'${{ github.event.inputs.private }}'",
               "auto_init": true
             }'
