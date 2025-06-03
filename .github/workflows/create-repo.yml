@@ -24,6 +24,6 @@ jobs:
             -d '{
               "name": "'"${{ github.event.inputs.repo_name }}"'",
               "description": "'"${{ github.event.inputs.description }}"'",
-              "private": "'${{ github.event.inputs.private }}'",
+              "private": ${{ github.event.inputs.private }},
               "auto_init": true
             }'
