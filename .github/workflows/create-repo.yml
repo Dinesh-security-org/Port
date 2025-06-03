@@ -23,7 +23,7 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             -d '{
               "name": "'"${{ github.event.inputs.repo_name }}"'",
-              "description": "Repository created via Port self-service",
+              "description": "'"${{ github.event.inputs.description }}"'",
               "private": "'${{ github.event.inputs.private }}'",
               "auto_init": true
             }'
