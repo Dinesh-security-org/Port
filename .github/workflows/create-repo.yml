@@ -18,7 +18,7 @@ jobs:
         run: |
           echo "Creating repository: ${{ github.event.inputs.repo_name }}"
           
-          curl -X POST https://api.github.com/orgs/DB-Advisory/repos \
+          curl -X POST https://api.github.com/orgs/Dinesh-security-org/repos \
             -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             -d '{
