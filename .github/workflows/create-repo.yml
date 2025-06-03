@@ -12,14 +12,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create repo in org
+      - name: Create repository in org
         env:
           GH_TOKEN: ${{ secrets.GH_ADMIN_TOKEN }}
         run: |
+          echo "Creating repository: ${{ github.event.inputs.repo_name }}"
+          
           curl -X POST https://api.github.com/orgs/DB-Advisory/repos \
-            -H "Authorization: token $GH_TOKEN" \
+            -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
-            -d "{
-              \"name\": \"${{ github.event.inputs.repo_name }}\",
-              \"private\": false
-            }"
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -d '{
+              "name": "'"${{ github.event.inputs.repo_name }}"'",
+              "description": "Repository created via Port self-service",
+              "private": true,
+              "auto_init": true
+            }'
