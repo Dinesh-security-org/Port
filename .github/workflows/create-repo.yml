@@ -1,0 +1,20 @@
+name: Create GitHub Repo
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo_name:
+        description: "The name of the new GitHub repository"
+        required: true
+        type: string
+
+jobs:
+  create-repo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create repository
+        run: |
+          curl -X POST https://api.github.com/orgs/Dinesh-security-org/repos \
+            -H "Authorization: token ${{ secrets.PORT_SELF_SERVICE }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -d "{\"name\":\"${{ github.event.inputs.repo_name }}\"}"
