@@ -6,6 +6,13 @@ on:
       repo_name:
         description: 'Repository name'
         required: true
+      description:
+        description: 'Repository description'
+        required: true
+      private:
+        description: 'Private repository'
+        required: true
+        type: boolean
 
 jobs:
   create-repo:
